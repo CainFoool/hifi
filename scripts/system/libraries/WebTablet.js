@@ -30,6 +30,7 @@ var AVATAR_SELF_ID = "{00000000-0000-0000-0000-000000000001}";
 var NO_HANDS = -1;
 var DELAY_FOR_30HZ = 33; // milliseconds
 
+var ATTACH_TO_ARM = true;
 
 // will need to be recaclulated if dimensions of fbx model change.
 var TABLET_NATURAL_DIMENSIONS = {x: 33.797, y: 50.129, z: 2.269};
@@ -75,9 +76,10 @@ function calcSpawnInfo(hand, tabletHeight, landscape) {
         var lookAt = Quat.lookAt(Vec3.ZERO, normal, Vec3.multiplyQbyV(MyAvatar.orientation, Vec3.UNIT_Y));
         var TABLET_RAKE_ANGLE = 30;
         rotation = Quat.multiply(Quat.angleAxis(TABLET_RAKE_ANGLE, Vec3.multiplyQbyV(lookAt, Vec3.UNIT_X)), lookAt);
-
+        rotation = Vec3.sum(rotation, { x: -90, y: 0, z: 0 });
+        // rotation = { x: -90, y: 0, z: 0 };
         var RELATIVE_SPAWN_OFFSET = { x: 0, y: 0.6, z: 0.1 };
-        position = Vec3.sum(position, Vec3.multiplyQbyV(rotation, Vec3.multiply(tabletHeight, RELATIVE_SPAWN_OFFSET)));
+        // position = Vec3.sum(position, Vec3.multiplyQbyV(rotation, Vec3.multiply(tabletHeight, RELATIVE_SPAWN_OFFSET)));
 
         return {
             position: position,
@@ -127,13 +129,14 @@ WebTablet = function (url, width, dpi, hand, clientOnly, location, visible) {
         type: "Model",
         modelURL: modelURL,
         url: modelURL, // for overlay
-        grabbable: true, // for overlay
-        loadPriority: 10.0, // for overlay
+        grabbable: false, // for overlay
+        // loadPriority: 10.0, // for overlay
         userData: JSON.stringify({
             "grabbableKey": {"grabbable": true}
         }),
         dimensions: this.getDimensions(),
-        parentID: AVATAR_SELF_ID,
+        parentID: MyAvatar.sessionUUID,
+        parentJointIndex: MyAvatar.getJointIndex("LeftForeArm"),
         visible: visible
     };
 
@@ -167,6 +170,7 @@ WebTablet = function (url, width, dpi, hand, clientOnly, location, visible) {
         parentID: this.tabletEntityID,
         parentJointIndex: -1,
         showKeyboardFocusHighlight: false,
+        isAA: HMD.active,
         visible: visible
     });
 
@@ -421,11 +425,18 @@ WebTablet.prototype.calculateTabletAttachmentProperties = function (hand, useMou
     if (HMD.active) {
         // in HMD mode, the tablet should be relative to the sensor to world matrix.
         tabletProperties.parentJointIndex = SENSOR_TO_ROOM_MATRIX;
+        
+        if (ATTACH_TO_ARM) {
+            tabletProperties.parentJointIndex = MyAvatar.getJointIndex("LeftHand");
+        }
 
         // compute the appropriate position of the tablet, near the hand controller that was used to spawn it.
         var spawnInfo = calcSpawnInfo(hand, this.height, this.landscape);
         tabletProperties.position = spawnInfo.position;
         tabletProperties.rotation = spawnInfo.rotation;
+        
+        //tabletProperties.position: { x: 0, y: 0.004, z: -0.05 },
+        //tabletProperties.rotation: Quat.fromPitchYawRollDegrees(0,180,-90),
     } else {
         // in desktop mode, the tablet should be relative to the camera
         tabletProperties.parentJointIndex = CAMERA_MATRIX;
@@ -452,6 +463,10 @@ WebTablet.prototype.onHmdChanged = function () {
     this.calculateTabletAttachmentProperties(NO_HANDS, false, tabletProperties);
     // TODO -- is this still needed?
     // Entities.editEntity(this.tabletEntityID, tabletProperties);
+
+    // Full scene FXAA should be disabled on the overlay when the tablet in desktop mode.
+    // This should make the text more readable.
+    Overlays.editOverlay(this.webOverlayID, { isAA: HMD.active });
 };
 
 WebTablet.prototype.pickle = function () {
