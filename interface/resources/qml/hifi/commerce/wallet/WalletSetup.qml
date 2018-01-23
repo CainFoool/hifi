@@ -241,11 +241,28 @@ Item {
             }
         }
 
-        // "Cancel" button
+        // "Import" Button
         HifiControlsUit.Button {
-            color: hifi.buttons.none;
+            id: firstPage_importButton;
+            color: hifi.buttons.blue;
             colorScheme: hifi.colorSchemes.dark;
             anchors.top: firstPage_setUpButton.bottom;
+            anchors.topMargin: 20;
+            anchors.horizontalCenter: parent.horizontalCenter;
+            width: parent.width/2;
+            height: 50;
+            text: "Import Existing";
+            onClicked: {
+                sendSignalToWallet({method: 'walletSetup_importWallet', referrer: root.referrer });
+            }
+        }  
+        
+        // "Cancel" button
+        HifiControlsUit.Button {
+            id: firstPage_cancelButton;
+            color: hifi.buttons.none;
+            colorScheme: hifi.colorSchemes.dark;
+            anchors.top: firstPage_importButton.bottom;
             anchors.topMargin: 20;
             anchors.horizontalCenter: parent.horizontalCenter;
             width: parent.width/2;
@@ -254,7 +271,8 @@ Item {
             onClicked: {
                 sendSignalToWallet({method: 'walletSetup_cancelClicked', referrer: root.referrer });
             }
-        }   
+        }
+
     }
     //
     // FIRST PAGE END

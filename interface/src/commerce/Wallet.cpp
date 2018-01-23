@@ -292,6 +292,10 @@ void initializeAESKeys(unsigned char* ivec, unsigned char* ckey, const QByteArra
     memcpy(ckey, wallet->getCKey(), 32);
 }
 
+bool Wallet::importWallet(QString pathToImportWallet) {
+    return QFile(pathToImportWallet).copy(QString(keyFilePath()));
+}
+
 Wallet::Wallet() {
     auto nodeList = DependencyManager::get<NodeList>();
     auto ledger = DependencyManager::get<Ledger>();
@@ -315,7 +319,7 @@ Wallet::Wallet() {
 
         walletScriptingInterface->setWalletStatus(status);
     });
-
+    
     auto accountManager = DependencyManager::get<AccountManager>();
     connect(accountManager.data(), &AccountManager::usernameChanged, this, [&]() {
         getWalletStatus();

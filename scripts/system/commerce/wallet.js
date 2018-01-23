@@ -100,7 +100,7 @@
             callback(false);
         });
     }
-    function getConnectionData(specificUsername, domain) { 
+    function getConnectionData(specificUsername, domain) {
         function frob(user) { // get into the right format
             var formattedSessionId = user.location.node_id || '';
             if (formattedSessionId !== '' && formattedSessionId.indexOf("{") != 0) {
@@ -415,7 +415,7 @@
                 userName: ''
             };
             sendToQml(message);
-            
+
             ExtendedOverlay.some(function (overlay) {
                 var id = overlay.key;
                 var selected = ExtendedOverlay.isSelected(id);
@@ -539,6 +539,9 @@
             case 'passphrasePopup_cancelClicked':
             case 'needsLogIn_cancelClicked':
                 tablet.gotoHomeScreen();
+                break;
+            case 'walletSetup_importWallet':
+                openImportWindow();
                 break;
             case 'walletSetup_cancelClicked':
                 switch (message.referrer) {
@@ -713,6 +716,20 @@
             }
         }
         off();
+    }
+
+    function openImportWindow() {
+        var loc = Window.browse();
+        if (loc === "") {
+            print("No wallet path provided.");
+            return;
+        }
+        if (Wallet.importWallet(loc)) {
+            Window.alert("Import successful.");
+            tablet.loadQMLSource(WALLET_QML_SOURCE);
+        } else {
+            Window.alert("There was an error importing this wallet.");
+        }
     }
 
     //

@@ -48,7 +48,7 @@ public:
     bool getPassphraseIsCached() { return !(_passphrase->isEmpty()); }
     bool walletIsAuthenticatedWithPassphrase();
     bool changePassphrase(const QString& newPassphrase);
-
+    bool importWallet(QString pathToImportWallet);
     void getWalletStatus();
     enum WalletStatus {
         WALLET_STATUS_NOT_LOGGED_IN = 0,

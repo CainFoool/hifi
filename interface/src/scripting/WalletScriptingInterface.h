@@ -42,6 +42,7 @@ public:
     // setWalletStatus() should never be made Q_INVOKABLE. If it were,
     //     scripts could cause the Wallet to incorrectly report its status.
     void setWalletStatus(const uint& status);
+    Q_INVOKABLE bool importWallet(QString pathToWalletFile);
 
 signals:
     void walletStatusChanged();

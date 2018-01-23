@@ -27,3 +27,8 @@ void WalletScriptingInterface::setWalletStatus(const uint& status) {
     _walletStatus = status;
     emit DependencyManager::get<Wallet>()->walletStatusResult(status);
 }
+
+bool WalletScriptingInterface::importWallet(QString pathToWalletFile) {
+    auto wallet = DependencyManager::get<Wallet>();
+    return wallet->importWallet(pathToWalletFile);
+}
